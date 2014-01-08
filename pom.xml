@@ -192,6 +192,13 @@
         <artifactId>wagon-webdav-jackrabbit</artifactId>
         <version>1.0</version>
       </extension>
+
+      <extension>
+        <groupId>org.springframework.build.aws</groupId>
+        <artifactId>org.springframework.build.aws.maven</artifactId>
+        <version>3.0.0.RELEASE</version>
+      </extension>
+
     </extensions>
     <pluginManagement>
       <plugins>
@@ -247,6 +254,7 @@
         </executions>
       </plugin>
     </plugins>
+
   </build>
 
   <reporting>
