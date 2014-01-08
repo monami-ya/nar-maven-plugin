@@ -280,16 +280,16 @@
 
 
   <distributionManagement>
-    <snapshotRepository>
-      <id>sonatype-nexus-snapshots</id>
-      <name>Sonatype Nexus Snapshots</name>
-      <url>${sonatypeOssDistMgmtSnapshotsUrl}</url>
-    </snapshotRepository>
     <repository>
-      <id>sonatype-nexus-staging</id>
-      <name>Nexus Release Repository</name>
-      <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+      <id>aws-release</id>
+      <name>AWS Release Repository</name>
+      <url>s3://update.pizzafactory.jp/pizzafactory-tycho-repo/release/</url>
     </repository>
+    <snapshotRepository>
+      <id>aws-snapshot</id>
+      <name>AWS Snapshot Repository</name>
+       <url>s3://update.pizzafactory.jp/pizzafactory-tycho-repo/snapshot</url>
+    </snapshotRepository>
   </distributionManagement>
 
   <profiles>
