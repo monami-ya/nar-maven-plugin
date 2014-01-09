@@ -36,6 +36,15 @@ import org.codehaus.plexus.util.FileUtils;
  * @author Mark Donszelmann
  */
 public class NarGnuConfigureMojo extends AbstractGnuMojo {
+
+	/**
+	 * Skip directory prepares before configure.
+	 * When it is true, gnuAutogenSkip is force true.
+	 *
+	 * @parameter property="nar.gnu.configure.prepare.skip" default-value="false"
+	 */
+	private boolean gnuConfigurePrepareSkip;
+
 	/**
 	 * Skip running of autogen.sh (aka buildconf).
 	 * 
@@ -77,33 +86,41 @@ public class NarGnuConfigureMojo extends AbstractGnuMojo {
 			return;
 		}
 
-		File targetDir = getGnuAOLSourceDirectory();
-		if (getGnuSourceDirectory().exists()) {
-			getLog().info("Copying GNU sources");
+		File sourceDir = getGnuSourceDirectory();
+		if (sourceDir.exists()) {
+			File targetDir;
 
-			try {
-				FileUtils.mkdir(targetDir.getPath());
-				NarUtil.copyDirectoryStructure(getGnuSourceDirectory(),
-						targetDir, null, null);
-			} catch (IOException e) {
-				throw new MojoExecutionException("Failed to copy GNU sources",
+			if (!gnuConfigurePrepareSkip) {
+				targetDir = getGnuAOLSourceDirectory();
+
+				getLog().info("Copying GNU sources");
+
+				try {
+					FileUtils.mkdir(targetDir.getPath());
+					NarUtil.copyDirectoryStructure(sourceDir,
+							targetDir, null, null);
+				} catch (IOException e) {
+					throw new MojoExecutionException("Failed to copy GNU sources",
 						e);
-			}
-
-			if (!gnuConfigureSkip && !gnuAutogenSkip) {
-				File autogen = new File(targetDir, AUTOGEN);
-				File buildconf = new File(targetDir, BUILDCONF);
-				if (autogen.exists()) {
-					getLog().info("Running GNU " + AUTOGEN);
-					runAutogen(autogen, targetDir, null);
-				} else if (buildconf.exists()) {
-					getLog().info("Running GNU " + BUILDCONF);
-					String gnuBuildconfArgsArray[] = null;
-					if (gnuBuildconfArgs != null) {
-						gnuBuildconfArgsArray = gnuBuildconfArgs.split("\\s");
-					}
-					runAutogen(buildconf, targetDir, gnuBuildconfArgsArray);
 				}
+
+				if (!gnuConfigureSkip && !gnuAutogenSkip) {
+					File autogen = new File(targetDir, AUTOGEN);
+					File buildconf = new File(targetDir, BUILDCONF);
+					if (autogen.exists()) {
+						getLog().info("Running GNU " + AUTOGEN);
+						runAutogen(autogen, targetDir, null);
+					} else if (buildconf.exists()) {
+						getLog().info("Running GNU " + BUILDCONF);
+						String gnuBuildconfArgsArray[] = null;
+						if (gnuBuildconfArgs != null) {
+							gnuBuildconfArgsArray = gnuBuildconfArgs.split("\\s");
+						}
+						runAutogen(buildconf, targetDir, gnuBuildconfArgsArray);
+					}
+				}
+			} else {
+				targetDir = sourceDir;
 			}
 
 			File configure = new File(targetDir, CONFIGURE);
@@ -126,12 +143,15 @@ public class NarGnuConfigureMojo extends AbstractGnuMojo {
 				}
 
 				// first 2 args are constant
-				args[0] = "./" + configure.getName();
+				args[0] = configure.getAbsolutePath();
 				args[1] = "--prefix="
 						+ getGnuAOLTargetDirectory().getAbsolutePath();
 
+				File buildDir = getGnuAOLSourceDirectory();
+				FileUtils.mkdir(buildDir.getPath());
+
 				getLog().info("args: " + arraysToString(args));
-				int result = NarUtil.runCommand("sh", args, targetDir, null,
+				int result = NarUtil.runCommand("sh", args, buildDir, null,
 						getLog());
 				if (result != 0) {
 					throw new MojoExecutionException("'" + CONFIGURE
