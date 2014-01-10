@@ -74,7 +74,7 @@ public class NarGnuMakeMojo
 
             String prefix = getGnuConfigureInstallPrefix();
             if (!prefix.equals("")) {
-                 args.add("DESTDIR='" + prefix + "'");
+                 args.add("DESTDIR='" + getGnuAOLTargetDirectory().getAbsolutePath() + "'");
             }
 
             if ( gnuMakeArgs != null )
